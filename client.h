@@ -11,7 +11,7 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = 0);
 
-protected:
+public:
     static void callbackWithoutArguments(JNIEnv *env, jobject obj);
     static void callbackWithBool(JNIEnv *env, jobject obj, bool b);
     static void callbackWithInt(JNIEnv *env, jobject obj, int i);

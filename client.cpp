@@ -22,7 +22,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
         return JNI_ERR;
     }
 
-    javaClass = env->FindClass("org/qtproject/mobile/notification/MyJavaNatives");
+    javaClass = env->FindClass("org/qtproject/test/MyJavaNatives");
     if(!javaClass){
         return JNI_ERR;
     }

@@ -2,12 +2,14 @@
 #define MYCALLBACK_H
 
 #include <QObject>
+#include <QString>
+#include <QStringList>
 
 class Callback : public QObject
 {
     Q_OBJECT
 public:
-    explicit Callback(QObject *parent = 0);
+    explicit Callback(QObject *parent = 0) : QObject(parent) {}
 
     inline void sendSignalFromJava() { emit signalFromJava(); }
     inline void sendBoolFromJava(bool b) { emit boolFromJava(b); }

@@ -1,11 +1,45 @@
 #include "client.h"
 
+#include <QtAndroidExtras/QAndroidJniObject>
+#include <QtAndroidExtras/QAndroidJniEnvironment>
+
 #include <QDebug>
 
 #include <callback.h>
 //JNI types : http://doc.qt.io/qt-5/qandroidjniobject.html#jni-types
 
 static Callback *callback = NULL;
+
+//Load native method add Android app loading
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    Q_UNUSED(reserved)
+
+    jclass javaClass;
+    JNIEnv* env;
+
+    if(vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK){
+        return JNI_ERR;
+    }
+
+    javaClass = env->FindClass("org/qtproject/mobile/notification/MyJavaNatives");
+    if(!javaClass){
+        return JNI_ERR;
+    }
+
+    static JNINativeMethod methodsArray[] = {
+        {"callbackWithoutArguments", "()V",  reinterpret_cast<void *>(Client::callbackWithoutArguments)},
+        {"callbackWithBool",         "(Z)V", reinterpret_cast<void *>(Client::callbackWithBool)},
+        {"callbackWithInt",          "(I)V", reinterpret_cast<void *>(Client::callbackWithInt)},
+        {"callbackWithString",       "(Ljava/lang/String;)V",  reinterpret_cast<void *>(Client::callbackWithString)},
+        {"callbackWithStringArray",  "([Ljava/lang/String;)V", reinterpret_cast<void *>(Client::callbackWithStringArray)}
+    };
+
+    if(env->RegisterNatives(javaClass, methodsArray, sizeof(methodsArray) / sizeof(methodsArray[0])) < 0){
+        return JNI_ERR;
+    }
+    return JNI_VERSION_1_6;
+}
 
 Client::Client(QObject *parent) : QObject(parent)
 {
@@ -18,20 +52,6 @@ Client::Client(QObject *parent) : QObject(parent)
     connect(callback,SIGNAL(intFromJava(int)),this,SIGNAL(intFromJava(int)));
     connect(callback,SIGNAL(stringFromJava(QString)),this,SIGNAL(stringFromJava(QString)));
     connect(callback,SIGNAL(stringArrayFromJava(QStringList)),this,SIGNAL(stringArrayFromJava(QStringList)));
-
-    JNINativeMethod methods[] {
-        {"callbackWithoutArguments", "()V", reinterpret_cast<void *>(Client::callbackWithoutArguments)},
-        {"callbackWithBool", "(Z)V", reinterpret_cast<void *>(Client::callbackWithBool)},
-        {"callbackWithInt", "(I)V", reinterpret_cast<void *>(Client::callbackWithInt)},
-        {"callbackWithString", "(Ljava/lang/String;)V", reinterpret_cast<void *>(Client::callbackWithString)},
-        {"callbackWithStringArray", "([Ljava/lang/String;)V", reinterpret_cast<void *>(Client::callbackWithStringArray)}
-    };
-
-    QAndroidJniObject javaClass("org/qtproject/test/MyJavaNatives");
-    QAndroidJniEnvironment env;
-    jclass objectClass = env->GetObjectClass(javaClass.object<jobject>());
-    env->RegisterNatives(objectClass, methods, sizeof(methods) / sizeof(methods[0]));
-    env->DeleteLocalRef(objectClass);
 }
 
 void Client::test()

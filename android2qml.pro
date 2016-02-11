@@ -4,8 +4,7 @@ QT += qml quick androidextras
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    client.cpp \
-    callback.cpp
+    client.cpp
 
 RESOURCES += qml.qrc
 
